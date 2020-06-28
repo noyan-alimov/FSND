@@ -1,9 +1,11 @@
 from datetime import datetime
-from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
-from wtforms.validators import DataRequired, AnyOf, URL
+from flask_wtf import FlaskForm
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, SubmitField, ValidationError
+from wtforms.validators import DataRequired, AnyOf, URL, Optional
+import phonenumbers
 
-class ShowForm(Form):
+
+class ShowForm(FlaskForm):
     artist_id = StringField(
         'artist_id'
     )
@@ -13,10 +15,11 @@ class ShowForm(Form):
     start_time = DateTimeField(
         'start_time',
         validators=[DataRequired()],
-        default= datetime.today()
+        default=datetime.today()
     )
 
-class VenueForm(Form):
+
+class VenueForm(FlaskForm):
     name = StringField(
         'name', validators=[DataRequired()]
     )
@@ -82,12 +85,20 @@ class VenueForm(Form):
     address = StringField(
         'address', validators=[DataRequired()]
     )
-    phone = StringField(
-        'phone'
-    )
-    image_link = StringField(
-        'image_link'
-    )
+    phone = StringField('phone')
+
+    def validate_phone(self, form, field):
+        if len(field.data) > 16:
+            raise ValidationError('Invalid phone number.')
+        try:
+            input_number = phonenumbers.parse(field.data)
+            if not (phonenumbers.is_valid_number(input_number)):
+                raise ValidationError('Invalid phone number.')
+        except:
+            input_number = phonenumbers.parse("+1"+field.data)
+            if not (phonenumbers.is_valid_number(input_number)):
+                raise ValidationError('Invalid phone number.')
+
     genres = SelectMultipleField(
         # TODO implement enum restriction
         'genres', validators=[DataRequired()],
@@ -113,11 +124,18 @@ class VenueForm(Form):
             ('Other', 'Other'),
         ]
     )
-    facebook_link = StringField(
-        'facebook_link', validators=[URL()]
+    website_link = StringField('website_link', validators=[Optional(), URL()])
+    image_link = StringField(
+        'image_link', validators=[Optional(), URL()]
     )
+    facebook_link = StringField(
+        'facebook_link', validators=[Optional(), URL()]
+    )
+    seeking = BooleanField('seeking an artist')
+    submit = SubmitField('Create Venue')
 
-class ArtistForm(Form):
+
+class ArtistForm(FlaskForm):
     name = StringField(
         'name', validators=[DataRequired()]
     )
@@ -180,13 +198,21 @@ class ArtistForm(Form):
             ('WY', 'WY'),
         ]
     )
-    phone = StringField(
-        # TODO implement validation logic for state
-        'phone'
-    )
-    image_link = StringField(
-        'image_link'
-    )
+
+    phone = StringField('phone')
+
+    def validate_phone(form, field):
+        if len(field.data) > 16:
+            raise ValidationError('Invalid phone number.')
+        try:
+            input_number = phonenumbers.parse(field.data)
+            if not (phonenumbers.is_valid_number(input_number)):
+                raise ValidationError('Invalid phone number.')
+        except:
+            input_number = phonenumbers.parse("+1"+field.data)
+            if not (phonenumbers.is_valid_number(input_number)):
+                raise ValidationError('Invalid phone number.')
+
     genres = SelectMultipleField(
         # TODO implement enum restriction
         'genres', validators=[DataRequired()],
@@ -212,9 +238,14 @@ class ArtistForm(Form):
             ('Other', 'Other'),
         ]
     )
-    facebook_link = StringField(
-        # TODO implement enum restriction
-        'facebook_link', validators=[URL()]
+    website_link = StringField('website_link', validators=[Optional(), URL()])
+    image_link = StringField(
+        'image_link', validators=[Optional(), URL()]
     )
+    facebook_link = StringField(
+        'facebook_link', validators=[Optional(), URL()]
+    )
+    seeking = BooleanField('seeking a venue')
+    submit = SubmitField('Create Artist')
 
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
