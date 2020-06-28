@@ -17,6 +17,7 @@ class ShowForm(FlaskForm):
         validators=[DataRequired()],
         default=datetime.today()
     )
+    submit = SubmitField('Create Show')
 
 
 class VenueForm(FlaskForm):
@@ -87,7 +88,7 @@ class VenueForm(FlaskForm):
     )
     phone = StringField('phone')
 
-    def validate_phone(self, form, field):
+    def validate_phone(form, field):
         if len(field.data) > 16:
             raise ValidationError('Invalid phone number.')
         try:
@@ -132,6 +133,7 @@ class VenueForm(FlaskForm):
         'facebook_link', validators=[Optional(), URL()]
     )
     seeking = BooleanField('seeking an artist')
+    seeking_description = StringField('seeking description')
     submit = SubmitField('Create Venue')
 
 
